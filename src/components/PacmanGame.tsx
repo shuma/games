@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { BackButton } from './BackButton'
-import { FullscreenButton } from './FullscreenButton'
 import { GameCanvas } from './GameCanvas'
 import { GameOverDialog } from './GameOverDialog'
+import { GameShell } from './GameShell'
 import { Hud } from './Hud'
 import { PauseDialog } from './PauseDialog'
 import { StartScreen } from './StartScreen'
 import { TouchControls } from './TouchControls'
-import { Game } from '@/game/game'
+import { Game, HEIGHT, WIDTH } from '@/game/game'
 import type { Dir } from '@/game/movement'
 
 const KEY_DIRS: Record<string, Dir> = {
@@ -54,21 +53,20 @@ export function PacmanGame({ onExit }: { onExit: () => void }) {
   }, [game])
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center p-(--space-m)">
-      <div className="flex w-[min(100%,calc((100dvh-var(--chrome))*28/31))] flex-col gap-(--space-s) [--chrome:184px] pointer-coarse:[--chrome:348px]">
-        <div className="flex items-center justify-between">
-          <BackButton onClick={onExit} />
-          <FullscreenButton />
-        </div>
-        <Hud snap={snap} onPause={() => game.setPaused(true)} />
-        <div className="relative">
-          <GameCanvas game={game} onSwipe={setDirection} />
-          {snap.phase === 'menu' && (
+    <>
+      <GameShell
+        onExit={onExit}
+        ratio={WIDTH / HEIGHT}
+        hud={<Hud snap={snap} onPause={() => game.setPaused(true)} />}
+        controls={<TouchControls onDirection={setDirection} />}
+        overlay={
+          snap.phase === 'menu' && (
             <StartScreen sprites={game.sprites} muted={snap.muted} onMutedChange={setMuted} onStart={() => game.newGame()} />
-          )}
-        </div>
-        <TouchControls onDirection={setDirection} />
-      </div>
+          )
+        }
+      >
+        <GameCanvas game={game} onSwipe={setDirection} />
+      </GameShell>
 
       <PauseDialog
         open={snap.paused}
@@ -85,6 +83,6 @@ export function PacmanGame({ onExit }: { onExit: () => void }) {
         onPlayAgain={() => game.newGame()}
         onMenu={() => game.toMenu()}
       />
-    </main>
+    </>
   )
 }

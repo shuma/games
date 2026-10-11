@@ -43,7 +43,7 @@ export function GameCanvas({ game, onSwipe }: { game: Game; onSwipe: (dir: Dir) 
     <canvas
       ref={ref}
       aria-label="Adam-Man maze"
-      className="block aspect-[28/31] w-full touch-none rounded-m bg-background"
+      className="block size-full touch-none rounded-m bg-background"
     />
   )
 }

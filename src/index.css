@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant short (@media (max-height: 520px));
 
 /* Open Runde — https://github.com/lauridskern/open-runde (SIL OFL 1.1, see public/fonts/OpenRunde-LICENSE.txt).
    The release ships 400–700; theme "heavy" (800) resolves to the 700 face. */
@@ -304,12 +305,29 @@
     @apply border-0 outline-ring/50;
   }
   html {
+    /* No double-tap zoom or pull-to-refresh while playing on touch screens. */
+    touch-action: manipulation;
+    overscroll-behavior: none;
     font-family: var(--font-ui);
     font-weight: var(--weight-ui-regular);
     text-wrap: pretty;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Game screens fill the viewport, clear of notches and home indicators. */
+@layer components {
+  .game-shell {
+    --pad: var(--space-s);
+    padding: max(var(--pad), env(safe-area-inset-top)) max(var(--pad), env(safe-area-inset-right))
+      max(var(--pad), env(safe-area-inset-bottom)) max(var(--pad), env(safe-area-inset-left));
+  }
+  @media (min-width: 640px) and (min-height: 521px) {
+    .game-shell {
+      --pad: var(--space-m);
+    }
   }
 }
 

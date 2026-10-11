@@ -6,9 +6,8 @@ import { cn } from '@/lib/utils'
 import { useGameCanvas } from '@/lib/use-game-canvas'
 import { MONEY_POINTS } from '@/racer/art'
 import { HEIGHT, LIVES, RacerGame as Engine, WIDTH } from '@/racer/game'
-import { BackButton } from './BackButton'
-import { FullscreenButton } from './FullscreenButton'
 import { GameOverDialog } from './GameOverDialog'
+import { GameShell } from './GameShell'
 import { PauseDialog } from './PauseDialog'
 import { SoundSwitch } from './SoundSwitch'
 import { SpriteFrames } from './SpriteFrames'
@@ -59,74 +58,73 @@ export function RacerGame({ onExit }: { onExit: () => void }) {
   const racing = snap.phase === 'playing' || snap.phase === 'countdown'
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center p-(--space-m)">
-      <div className="flex w-[min(100%,calc((100dvh-var(--chrome))*16/9))] flex-col gap-(--space-s) [--chrome:184px]">
-        <div className="flex items-center justify-between">
-          <BackButton onClick={onExit} />
-          <FullscreenButton />
-        </div>
-        <header className="flex items-end justify-between gap-(--space-m)">
-          <div className="flex items-end gap-(--space-l)">
-            <Stat label="Money" value={snap.score} />
-            <Stat label="Best" value={snap.best} />
-          </div>
-          <div className="flex items-center gap-(--space-s)">
-            <div className="flex gap-(--space-xxs)" aria-label={`${snap.lives} of ${LIVES} lives left`} role="img">
-              {Array.from({ length: LIVES }, (_, i) => (
-                <HeartIcon
-                  key={i}
-                  aria-hidden
-                  className={cn('size-5', i < snap.lives ? 'fill-(--error) text-(--error)' : 'text-muted-foreground')}
-                />
-              ))}
+    <>
+      <GameShell
+        onExit={onExit}
+        ratio={WIDTH / HEIGHT}
+        hud={
+          <>
+            <div className="flex items-end gap-(--space-l)">
+              <Stat label="Money" value={snap.score} />
+              <Stat label="Best" value={snap.best} />
             </div>
-            {racing && (
-              <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
-                <PauseIcon />
-              </Button>
-            )}
-          </div>
-        </header>
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
-            aria-label="DagRacer road"
-            className="block aspect-[16/9] w-full touch-none rounded-m bg-background select-none"
-            onPointerDown={(e) => {
-              e.preventDefault()
-              game.jump()
-            }}
-          />
-          {snap.phase === 'menu' && (
-            <div className="absolute inset-0 flex items-center justify-center overflow-auto p-(--space-m)">
-              <Card className="w-full max-w-xs">
-                <CardHeader className="justify-items-center text-center">
-                  <SpriteFrames src="/sprites/racer.png" frames={4} animated interval={90} className="h-[51px] w-24" />
-                  <CardTitle className="type-xl font-(--weight-brand-heavy)">DagRacer</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-(--space-s)">
-                  <ul className="flex flex-col gap-(--space-xs) type-s">
-                    {RULES.map((r) => (
-                      <li key={r.label} className="flex items-center justify-between gap-(--space-s)">
-                        <span>{r.label}</span>
-                        <span className="tabular-nums text-muted-foreground">{r.value}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
-                </CardContent>
-                <CardFooter className="flex-col">
-                  <Button className="w-full" onClick={() => game.newGame()} autoFocus>
-                    <PlayIcon />
-                    Play
-                  </Button>
-                  <p className="type-xs text-muted-foreground">Space, click or tap to jump · P to pause</p>
-                </CardFooter>
-              </Card>
+            <div className="flex items-center gap-(--space-s)">
+              <div className="flex gap-(--space-xxs)" aria-label={`${snap.lives} of ${LIVES} lives left`} role="img">
+                {Array.from({ length: LIVES }, (_, i) => (
+                  <HeartIcon
+                    key={i}
+                    aria-hidden
+                    className={cn('size-5', i < snap.lives ? 'fill-(--error) text-(--error)' : 'text-muted-foreground')}
+                  />
+                ))}
+              </div>
+              {racing && (
+                <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
+                  <PauseIcon />
+                </Button>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </>
+        }
+        overlay={
+          snap.phase === 'menu' && (
+            <Card>
+              <CardHeader className="justify-items-center text-center">
+                <SpriteFrames src="/sprites/racer.png" frames={4} animated interval={90} className="h-[51px] w-24 short:hidden" />
+                <CardTitle className="type-xl font-(--weight-brand-heavy)">DagRacer</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-(--space-s)">
+                <ul className="flex flex-col gap-(--space-xs) type-s">
+                  {RULES.map((r) => (
+                    <li key={r.label} className="flex items-center justify-between gap-(--space-s)">
+                      <span>{r.label}</span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">{r.value}</span>
+                    </li>
+                  ))}
+                </ul>
+                <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
+              </CardContent>
+              <CardFooter className="flex-col">
+                <Button className="w-full" onClick={() => game.newGame()} autoFocus>
+                  <PlayIcon />
+                  Play
+                </Button>
+                <p className="type-xs text-muted-foreground short:hidden">Space, click or tap to jump · P to pause</p>
+              </CardFooter>
+            </Card>
+          )
+        }
+      >
+        <canvas
+          ref={canvasRef}
+          aria-label="DagRacer road"
+          className="block size-full touch-none rounded-m bg-background select-none"
+          onPointerDown={(e) => {
+            e.preventDefault()
+            game.jump()
+          }}
+        />
+      </GameShell>
 
       <PauseDialog
         open={snap.paused}
@@ -143,6 +141,6 @@ export function RacerGame({ onExit }: { onExit: () => void }) {
         onPlayAgain={() => game.newGame()}
         onMenu={() => game.toMenu()}
       />
-    </main>
+    </>
   )
 }

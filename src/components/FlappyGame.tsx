@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { FlappyGame as Engine, HEIGHT, WIDTH } from '@/flappy/game'
 import { useGameCanvas } from '@/lib/use-game-canvas'
-import { BackButton } from './BackButton'
-import { FullscreenButton } from './FullscreenButton'
 import { GameOverDialog } from './GameOverDialog'
+import { GameShell } from './GameShell'
 import { PauseDialog } from './PauseDialog'
 import { SoundSwitch } from './SoundSwitch'
 import { SpriteFrames } from './SpriteFrames'
@@ -51,65 +50,64 @@ export function FlappyGame({ onExit }: { onExit: () => void }) {
   const inFlight = snap.phase === 'ready' || snap.phase === 'playing'
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center p-(--space-m)">
-      <div className="flex w-[min(100%,calc((100dvh-var(--chrome))*9/16))] flex-col gap-(--space-s) [--chrome:184px]">
-        <div className="flex items-center justify-between">
-          <BackButton onClick={onExit} />
-          <FullscreenButton />
-        </div>
-        <header className="flex items-end justify-between gap-(--space-m)">
-          <div className="flex items-end gap-(--space-l)">
-            <Stat label="Score" value={snap.score} />
-            <Stat label="Best" value={snap.best} />
-          </div>
-          {inFlight && (
-            <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
-              <PauseIcon />
-            </Button>
-          )}
-        </header>
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
-            aria-label="FlappyAisha sky"
-            className="block aspect-[9/16] w-full touch-none rounded-m bg-background select-none"
-            onPointerDown={(e) => {
-              e.preventDefault()
-              game.flap()
-            }}
-          />
-          {snap.phase === 'menu' && (
-            <div className="absolute inset-0 flex items-center justify-center p-(--space-m)">
-              <Card className="w-full max-w-xs">
-                <CardHeader className="justify-items-center text-center">
-                  <SpriteFrames src="/sprites/aisha.png" animated interval={110} className="h-18 w-24" />
-                  <CardTitle className="type-xl font-(--weight-brand-heavy)">FlappyAisha</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-(--space-s)">
-                  <ul className="flex flex-col gap-(--space-xs) type-s">
-                    <li className="flex items-center justify-between gap-(--space-s)">
-                      <span>Fly past a tower</span>
-                      <span className="tabular-nums text-muted-foreground">1</span>
-                    </li>
-                    <li className="flex items-center justify-between gap-(--space-s)">
-                      <span>Catch a golden snitch</span>
-                      <span className="tabular-nums text-muted-foreground">5</span>
-                    </li>
-                  </ul>
-                  <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
-                </CardContent>
-                <CardFooter className="flex-col">
-                  <Button className="w-full" onClick={() => game.newGame()} autoFocus>
-                    <PlayIcon />
-                    Play
-                  </Button>
-                  <p className="type-xs text-muted-foreground">Space, click or tap to fly · P to pause</p>
-                </CardFooter>
-              </Card>
+    <>
+      <GameShell
+        onExit={onExit}
+        ratio={WIDTH / HEIGHT}
+        hud={
+          <>
+            <div className="flex items-end gap-(--space-l)">
+              <Stat label="Score" value={snap.score} />
+              <Stat label="Best" value={snap.best} />
             </div>
-          )}
-        </div>
-      </div>
+            {inFlight && (
+              <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
+                <PauseIcon />
+              </Button>
+            )}
+          </>
+        }
+        overlay={
+          snap.phase === 'menu' && (
+            <Card>
+              <CardHeader className="justify-items-center text-center">
+                <SpriteFrames src="/sprites/aisha.png" animated interval={110} className="h-18 w-24 short:hidden" />
+                <CardTitle className="type-xl font-(--weight-brand-heavy)">FlappyAisha</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-(--space-s)">
+                <ul className="flex flex-col gap-(--space-xs) type-s">
+                  <li className="flex items-center justify-between gap-(--space-s)">
+                    <span>Fly past a tower</span>
+                    <span className="tabular-nums text-muted-foreground">1</span>
+                  </li>
+                  <li className="flex items-center justify-between gap-(--space-s)">
+                    <span>Catch a golden snitch</span>
+                    <span className="tabular-nums text-muted-foreground">5</span>
+                  </li>
+                </ul>
+                <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
+              </CardContent>
+              <CardFooter className="flex-col">
+                <Button className="w-full" onClick={() => game.newGame()} autoFocus>
+                  <PlayIcon />
+                  Play
+                </Button>
+                <p className="type-xs text-muted-foreground short:hidden">Space, click or tap to fly · P to pause</p>
+              </CardFooter>
+            </Card>
+          )
+        }
+      >
+        <canvas
+          ref={canvasRef}
+          aria-label="FlappyAisha sky"
+          className="block size-full touch-none rounded-m bg-background select-none"
+          onPointerDown={(e) => {
+            e.preventDefault()
+            game.flap()
+          }}
+        />
+      </GameShell>
 
       <PauseDialog
         open={snap.paused}
@@ -125,6 +123,6 @@ export function FlappyGame({ onExit }: { onExit: () => void }) {
         onPlayAgain={() => game.newGame()}
         onMenu={() => game.toMenu()}
       />
-    </main>
+    </>
   )
 }

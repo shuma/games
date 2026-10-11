@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { POINTS, WhackGame as Engine, type HoleView } from '@/whack/game'
-import { BackButton } from './BackButton'
-import { FullscreenButton } from './FullscreenButton'
 import { GameOverDialog } from './GameOverDialog'
+import { GameShell } from './GameShell'
 import { Hammer, type HammerHandle } from './Hammer'
 import { PauseDialog } from './PauseDialog'
 import { SoundSwitch } from './SoundSwitch'
@@ -59,66 +58,67 @@ export function WhackGame({ onExit }: { onExit: () => void }) {
   }, [game])
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center p-(--space-m)">
-      <div className="flex w-full max-w-lg flex-col gap-(--space-s)">
-        <div className="flex items-center justify-between">
-          <BackButton onClick={onExit} />
-          <FullscreenButton />
-        </div>
-        <header className="flex items-end justify-between gap-(--space-m)">
-          <div className="flex items-end gap-(--space-l)">
-            <Stat label="Score" value={snap.score} />
-            <Stat label="Best" value={snap.best} />
-            <Stat label="Time" value={snap.timeLeft} />
-          </div>
-          {snap.phase === 'playing' && (
-            <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
-              <PauseIcon />
-            </Button>
-          )}
-        </header>
+    <>
+      <GameShell
+        onExit={onExit}
+        ratio={1}
+        hud={
+          <>
+            <div className="flex items-end gap-(--space-l)">
+              <Stat label="Score" value={snap.score} />
+              <Stat label="Best" value={snap.best} />
+              <Stat label="Time" value={snap.timeLeft} />
+            </div>
+            {snap.phase === 'playing' && (
+              <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
+                <PauseIcon />
+              </Button>
+            )}
+          </>
+        }
+        overlay={
+          snap.phase === 'menu' && (
+            <Card>
+              <CardHeader className="justify-items-center text-center">
+                <SpriteFrames src="/sprites/dad.png" animated interval={180} className="size-18 short:hidden" />
+                <CardTitle className="type-xl font-(--weight-brand-heavy)">Whack-a-Dad</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-(--space-s)">
+                <ul className="flex flex-col gap-(--space-xs) type-s">
+                  {RULES.map((r) => (
+                    <li key={r.label} className="flex items-center justify-between gap-(--space-s)">
+                      <span>{r.label}</span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">{r.points > 0 ? `+${r.points}` : r.points}</span>
+                    </li>
+                  ))}
+                </ul>
+                <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
+              </CardContent>
+              <CardFooter className="flex-col">
+                <Button className="w-full" onClick={() => game.newGame()} autoFocus>
+                  <PlayIcon />
+                  Play
+                </Button>
+                <p className="type-xs text-muted-foreground short:hidden">Tap, click or press 1–9 · P to pause</p>
+              </CardFooter>
+            </Card>
+          )
+        }
+      >
         <div
-          className={cn('relative', playing && 'cursor-none')}
+          className={cn('size-full', playing && 'cursor-none')}
           onPointerMove={(e) => playing && e.pointerType === 'mouse' && hammer.current?.move(...local(e))}
           onPointerDown={(e) => playing && hammer.current?.swing(...local(e), e.pointerType !== 'mouse')}
           onPointerLeave={() => hammer.current?.hide()}
         >
           {playing && <Hammer ref={hammer} />}
-          <div className="grid touch-none grid-cols-3 gap-(--space-s) rounded-m bg-card p-(--space-m) shadow-(--shadow-m) select-none">
+          <div className="grid size-full touch-none grid-cols-3 grid-rows-3 gap-(--space-s) rounded-m bg-card p-(--space-m) shadow-(--shadow-m) select-none">
             {snap.holes.map((hole, i) => (
               <Hole key={i} index={i} hole={hole} onWhack={() => game.whack(i)} />
             ))}
           </div>
-          {snap.phase === 'menu' && (
-            <div className="absolute inset-0 flex items-center justify-center p-(--space-m)">
-              <Card className="w-full max-w-xs">
-                <CardHeader className="justify-items-center text-center">
-                  <SpriteFrames src="/sprites/dad.png" animated interval={180} className="size-18" />
-                  <CardTitle className="type-xl font-(--weight-brand-heavy)">Whack-a-Dad</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-(--space-s)">
-                  <ul className="flex flex-col gap-(--space-xs) type-s">
-                    {RULES.map((r) => (
-                      <li key={r.label} className="flex items-center justify-between gap-(--space-s)">
-                        <span>{r.label}</span>
-                        <span className="tabular-nums text-muted-foreground">{r.points > 0 ? `+${r.points}` : r.points}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
-                </CardContent>
-                <CardFooter className="flex-col">
-                  <Button className="w-full" onClick={() => game.newGame()} autoFocus>
-                    <PlayIcon />
-                    Play
-                  </Button>
-                  <p className="type-xs text-muted-foreground">Tap, click or press 1–9 · P to pause</p>
-                </CardFooter>
-              </Card>
-            </div>
-          )}
         </div>
-      </div>
+      </GameShell>
 
       <PauseDialog
         open={snap.paused}
@@ -135,7 +135,7 @@ export function WhackGame({ onExit }: { onExit: () => void }) {
         onPlayAgain={() => game.newGame()}
         onMenu={() => game.toMenu()}
       />
-    </main>
+    </>
   )
 }
 
@@ -145,7 +145,7 @@ function Hole({ index, hole, onWhack }: { index: number; hole: HoleView; onWhack
     <button
       type="button"
       aria-label={`Hole ${index + 1}`}
-      className="relative aspect-square cursor-[inherit] rounded-m outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+      className="relative min-h-0 cursor-[inherit] rounded-m outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       onPointerDown={(e) => {
         e.preventDefault()
         onWhack()

@@ -26,6 +26,34 @@ function toggleFullscreen() {
   else root.webkitRequestFullscreen?.()
 }
 
+/**
+ * On touch devices, go fullscreen on the first tap (browsers only allow it from a gesture).
+ * Once the player leaves fullscreen, leave the choice to the button instead of re-entering on every tap.
+ */
+export function useAutoFullscreen() {
+  useEffect(() => {
+    if (!supported || !window.matchMedia('(pointer: coarse)').matches) return
+    let wasFullscreen = false
+    const onTap = () => {
+      if (!isFullscreen()) toggleFullscreen()
+    }
+    const onChange = () => {
+      if (isFullscreen()) wasFullscreen = true
+      else if (wasFullscreen) stop()
+    }
+    const stop = () => {
+      window.removeEventListener('pointerup', onTap, true)
+      document.removeEventListener('fullscreenchange', onChange)
+      document.removeEventListener('webkitfullscreenchange', onChange)
+    }
+    // pointerup counts as a user gesture everywhere; pointerdown does not in some mobile browsers.
+    window.addEventListener('pointerup', onTap, true)
+    document.addEventListener('fullscreenchange', onChange)
+    document.addEventListener('webkitfullscreenchange', onChange)
+    return stop
+  }, [])
+}
+
 /** Toggles fullscreen for the whole page. F also toggles. Hidden where the browser can't go fullscreen. */
 export function FullscreenButton({ className }: { className?: string }) {
   const [active, setActive] = useState(isFullscreen)

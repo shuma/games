@@ -5,9 +5,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { CatchGame as Engine, HEIGHT, LIVES, WIDTH } from '@/catch/game'
 import { cn } from '@/lib/utils'
 import { useGameCanvas } from '@/lib/use-game-canvas'
-import { BackButton } from './BackButton'
-import { FullscreenButton } from './FullscreenButton'
 import { GameOverDialog } from './GameOverDialog'
+import { GameShell } from './GameShell'
 import { PauseDialog } from './PauseDialog'
 import { SoundSwitch } from './SoundSwitch'
 import { SpriteFrames } from './SpriteFrames'
@@ -81,73 +80,72 @@ export function CatchGame({ onExit }: { onExit: () => void }) {
   }, [game])
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center p-(--space-m)">
-      <div className="flex w-[min(100%,calc((100dvh-var(--chrome))*2/3))] flex-col gap-(--space-s) [--chrome:184px]">
-        <div className="flex items-center justify-between">
-          <BackButton onClick={onExit} />
-          <FullscreenButton />
-        </div>
-        <header className="flex items-end justify-between gap-(--space-m)">
-          <div className="flex items-end gap-(--space-l)">
-            <Stat label="Score" value={snap.score} />
-            <Stat label="Best" value={snap.best} />
-          </div>
-          <div className="flex items-center gap-(--space-s)">
-            <div className="flex gap-(--space-xxs)" aria-label={`${snap.lives} of ${LIVES} lives left`} role="img">
-              {Array.from({ length: LIVES }, (_, i) => (
-                <HeartIcon
-                  key={i}
-                  aria-hidden
-                  className={cn('size-5', i < snap.lives ? 'fill-(--error) text-(--error)' : 'text-muted-foreground')}
-                />
-              ))}
+    <>
+      <GameShell
+        onExit={onExit}
+        ratio={WIDTH / HEIGHT}
+        hud={
+          <>
+            <div className="flex items-end gap-(--space-l)">
+              <Stat label="Score" value={snap.score} />
+              <Stat label="Best" value={snap.best} />
             </div>
-            {playing && (
-              <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
-                <PauseIcon />
-              </Button>
-            )}
-          </div>
-        </header>
-        <div className="relative">
-          <canvas
-            ref={canvasRef}
-            aria-label="Catch the Food picnic"
-            className={cn(
-              'block aspect-[2/3] w-full touch-none rounded-m bg-background select-none',
-              playing && !snap.paused && 'cursor-none',
-            )}
-          />
-          {snap.phase === 'menu' && (
-            <div className="absolute inset-0 flex items-center justify-center p-(--space-m)">
-              <Card className="w-full max-w-xs">
-                <CardHeader className="justify-items-center text-center">
-                  <SpriteFrames animated className="size-18" />
-                  <CardTitle className="type-xl font-(--weight-brand-heavy)">Catch the Food</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-(--space-s)">
-                  <ul className="flex flex-col gap-(--space-xs) type-s">
-                    {RULES.map((r) => (
-                      <li key={r.label} className="flex items-center justify-between gap-(--space-s)">
-                        <span>{r.label}</span>
-                        <span className="shrink-0 tabular-nums text-muted-foreground">{r.value}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
-                </CardContent>
-                <CardFooter className="flex-col">
-                  <Button className="w-full" onClick={() => game.newGame()} autoFocus>
-                    <PlayIcon />
-                    Play
-                  </Button>
-                  <p className="type-xs text-muted-foreground">Move the mouse or drag · ← → also work · P to pause</p>
-                </CardFooter>
-              </Card>
+            <div className="flex items-center gap-(--space-s)">
+              <div className="flex gap-(--space-xxs)" aria-label={`${snap.lives} of ${LIVES} lives left`} role="img">
+                {Array.from({ length: LIVES }, (_, i) => (
+                  <HeartIcon
+                    key={i}
+                    aria-hidden
+                    className={cn('size-5', i < snap.lives ? 'fill-(--error) text-(--error)' : 'text-muted-foreground')}
+                  />
+                ))}
+              </div>
+              {playing && (
+                <Button variant="ghost" size="icon" aria-label="Pause" onClick={() => game.setPaused(true)}>
+                  <PauseIcon />
+                </Button>
+              )}
             </div>
+          </>
+        }
+        overlay={
+          snap.phase === 'menu' && (
+            <Card>
+              <CardHeader className="justify-items-center text-center">
+                <SpriteFrames animated className="size-18 short:hidden" />
+                <CardTitle className="type-xl font-(--weight-brand-heavy)">Catch the Food</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-(--space-s)">
+                <ul className="flex flex-col gap-(--space-xs) type-s">
+                  {RULES.map((r) => (
+                    <li key={r.label} className="flex items-center justify-between gap-(--space-s)">
+                      <span>{r.label}</span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">{r.value}</span>
+                    </li>
+                  ))}
+                </ul>
+                <SoundSwitch muted={snap.muted} onMutedChange={setMuted} />
+              </CardContent>
+              <CardFooter className="flex-col">
+                <Button className="w-full" onClick={() => game.newGame()} autoFocus>
+                  <PlayIcon />
+                  Play
+                </Button>
+                <p className="type-xs text-muted-foreground short:hidden">Move the mouse or drag · ← → also work · P to pause</p>
+              </CardFooter>
+            </Card>
+          )
+        }
+      >
+        <canvas
+          ref={canvasRef}
+          aria-label="Catch the Food picnic"
+          className={cn(
+            'block size-full touch-none rounded-m bg-background select-none',
+            playing && !snap.paused && 'cursor-none',
           )}
-        </div>
-      </div>
+        />
+      </GameShell>
 
       <PauseDialog
         open={snap.paused}
@@ -164,6 +162,6 @@ export function CatchGame({ onExit }: { onExit: () => void }) {
         onPlayAgain={() => game.newGame()}
         onMenu={() => game.toMenu()}
       />
-    </main>
+    </>
   )
 }

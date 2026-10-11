@@ -10,10 +10,10 @@ export function Hud({ snap, onPause }: { snap: Snapshot; onPause: () => void }) 
   const playing = snap.phase !== 'menu' && snap.phase !== 'gameOver'
 
   return (
-    <header className="flex items-end justify-between gap-(--space-m)">
+    <>
       <div className="flex items-end gap-(--space-l)">
         <Stat label="Score" value={snap.score} />
-        <Stat label="High score" value={snap.highScore} />
+        <Stat label="Best" value={snap.highScore} />
       </div>
       <div className="flex items-center gap-(--space-s)">
         {playing && (
@@ -23,13 +23,15 @@ export function Hud({ snap, onPause }: { snap: Snapshot; onPause: () => void }) 
                 <SpriteFrames key={i} className="size-6" />
               ))}
             </div>
-            <Badge variant="secondary">Level {snap.level}</Badge>
+            <Badge variant="secondary" className="max-sm:hidden">
+              Level {snap.level}
+            </Badge>
             <Button variant="ghost" size="icon" aria-label="Pause" onClick={onPause}>
               <PauseIcon />
             </Button>
           </>
         )}
       </div>
-    </header>
+    </>
   )
 }

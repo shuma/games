@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CatchGame } from '@/components/CatchGame'
+import { useAutoFullscreen } from '@/components/FullscreenButton'
 import { FlappyGame } from '@/components/FlappyGame'
 import { GameMenu, type GameId } from '@/components/GameMenu'
 import { PacmanGame } from '@/components/PacmanGame'
@@ -13,6 +14,7 @@ function gameFromHash(): GameId | null {
 
 export default function App() {
   const [game, setGame] = useState(gameFromHash)
+  useAutoFullscreen()
 
   useEffect(() => {
     const onHash = () => setGame(gameFromHash())
