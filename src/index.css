@@ -1,0 +1,463 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Open Runde — https://github.com/lauridskern/open-runde (SIL OFL 1.1, see public/fonts/OpenRunde-LICENSE.txt).
+   The release ships 400–700; theme "heavy" (800) resolves to the 700 face. */
+@font-face {
+  font-family: "Open Runde";
+  src: url("/fonts/OpenRunde-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Open Runde";
+  src: url("/fonts/OpenRunde-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme inline {
+  --font-sans: var(--font-ui);
+  --font-heading: var(--font-brand);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --radius-s: var(--radius-s);
+  --radius-m: var(--radius-m);
+  --radius-l: var(--radius-l);
+}
+
+/* Untitled theme — values from gui/themes/untitled.md */
+:root {
+  --toolbar-divider-bleed: 0;
+  --focus-ring-outline: initial;
+  --icon-stroke-width: 2;
+  --icon-light-display: none;
+  --icon-regular-display: inline;
+  --icon-bold-display: none;
+  --motion-duration: 200ms;
+  --motion-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-type: easing;
+  --motion-visual-duration: 0.2;
+  --motion-bounce: 0.2;
+  --motion-enabled: 1;
+  --motion-small-iterations: infinite;
+  --motion-large-duration: 360ms;
+  --motion-large-easing: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-large-type: easing;
+  --motion-large-visual-duration: 0.36;
+  --motion-large-bounce: 0.2;
+  --motion-large-iterations: infinite;
+  --motion-popup-scale: 0.96;
+  --motion-press-distance: 1px;
+  --option-badge-background: #00c853;
+  --option-badge-foreground: #000000;
+  --navigation-active-foreground: #000000;
+  --emphasis-chart-fill: #00c85333;
+  --emphasis-balance-background: #b6ebd8;
+  --emphasis-rewards-background: #07376b;
+  --emphasis-icon-background: #ffb8da;
+  --emphasis-icon-foreground: #000000;
+  --emphasis-type-background: #00c853;
+  --emphasis-type-foreground: #000000;
+  --navigation-active-background: #00c853;
+  --surface-raised-image: none;
+  --surface-raised-shadow: 0 0 0 0 transparent;
+  --surface-recessed-image: none;
+  --surface-recessed-shadow: 0 0 0 0 transparent;
+  --space-zero: 0px;
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-s: 12px;
+  --space-m: 16px;
+  --space-l: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --tracking-xs: -0.02em;
+  --tracking-s: -0.01em;
+  --tracking-m: 0em;
+  --tracking-l: 0.01em;
+  --tracking-xl: 0.02em;
+  --size-xxs: 10px;
+  --line-xxs: 14px;
+  --letter-spacing-xxs: 0.02em;
+  --size-xs: 12px;
+  --line-xs: 16px;
+  --letter-spacing-xs: 0.01em;
+  --size-s: 14px;
+  --line-s: 20px;
+  --letter-spacing-s: 0.01em;
+  --size-m: 16px;
+  --line-m: 24px;
+  --letter-spacing-m: 0em;
+  --size-l: 24px;
+  --line-l: 32px;
+  --letter-spacing-l: -0.01em;
+  --size-xl: 36px;
+  --line-xl: 40px;
+  --letter-spacing-xl: -0.01em;
+  --size-xxl: 48px;
+  --line-xxl: 52px;
+  --letter-spacing-xxl: -0.02em;
+  --radius-zero: 0px;
+  --radius-xs: 8px;
+  --radius-s: 16px;
+  --radius-m: 22px;
+  --radius-l: 28px;
+  --radius-xl: 40px;
+  --radius-full: 9999px;
+  --border-none: 0px;
+  --border-s: 0px;
+  --border-m: 0px;
+  --border-l: 0px;
+  --border-default-color: #e9e6e033;
+  --border-shadow-none: 0 0 0 0 transparent;
+  --border-shadow-s: 0 0 0 0 transparent;
+  --border-shadow-m: 0 0 0 0 transparent;
+  --border-shadow-l: 0 0 0 0 transparent;
+  --font-ui: "Open Runde", -apple-system, BlinkMacSystemFont, sans-serif;
+  --weight-ui-regular: 400;
+  --weight-ui-medium: 700;
+  --weight-ui-heavy: 800;
+  --font-brand: "Open Runde", -apple-system, BlinkMacSystemFont, sans-serif;
+  --weight-brand-regular: 400;
+  --weight-brand-medium: 700;
+  --weight-brand-heavy: 800;
+  --font-editorial: "Open Runde", -apple-system, BlinkMacSystemFont, sans-serif;
+  --weight-editorial-regular: 400;
+  --weight-editorial-medium: 700;
+  --weight-editorial-heavy: 800;
+  --font-data: "Open Runde", -apple-system, BlinkMacSystemFont, sans-serif;
+  --weight-data-regular: 400;
+  --weight-data-medium: 700;
+  --weight-data-heavy: 800;
+  --color-none: transparent;
+  --color-1: #00c853;
+  --color-1-transparent: #00c85333;
+  --color-2: #07376b;
+  --color-2-transparent: #07376b33;
+  --color-3: #ffb8da;
+  --color-3-transparent: #ffb8da33;
+  --color-4: #b6ebd8;
+  --color-4-transparent: #b6ebd833;
+  --neutral-1: #ffffff;
+  --neutral-1-transparent: #ffffff33;
+  --neutral-2: #fbfbfa;
+  --neutral-2-transparent: #fbfbfa33;
+  --neutral-3: #f5f4f1;
+  --neutral-3-transparent: #f5f4f133;
+  --neutral-4: #e9e6e0;
+  --neutral-4-transparent: #e9e6e033;
+  --neutral-5: #d2ccc0;
+  --neutral-5-transparent: #d2ccc033;
+  --neutral-6: #a6a094;
+  --neutral-6-transparent: #a6a09433;
+  --neutral-7: #837d72;
+  --neutral-7-transparent: #837d7233;
+  --neutral-8: #59544a;
+  --neutral-8-transparent: #59544a33;
+  --neutral-9: #373228;
+  --neutral-9-transparent: #37322833;
+  --neutral-10: #000000;
+  --neutral-10-transparent: #00000033;
+  --success: #00c853;
+  --success-transparent: #00c85333;
+  --warning: #ffea00;
+  --warning-transparent: #ffea0033;
+  --error: #fc032d;
+  --error-transparent: #fc032d33;
+  --shadow-none: none;
+  --shadow-s: 0px 2px 4px 0px #00000000;
+  --shadow-m: 0px 2px 6px 0px #0000000d, 0px 8px 24px 0px #00000013;
+  --shadow-l: 0px 16px 48px 0px #00000000;
+  --cte-canvas: #ffffff;
+  --cte-surface: #fbfbfa;
+  --cte-surface-muted: #f5f4f1;
+  --cte-text: #000000;
+  --cte-text-muted: #837d72;
+  --cte-border: #e9e6e033;
+  --cte-accent: #00c853;
+  --cte-accent-text: #000000;
+  --cte-danger: #fc032d;
+  --cte-focus: #00c853;
+  --cte-font: "Open Runde", -apple-system, BlinkMacSystemFont, sans-serif;
+  --cte-font-size: 14px;
+  --cte-font-weight: 400;
+  --cte-line-height: 20px;
+  --cte-letter-spacing: 0.01em;
+  --cte-detail-font-size: 12px;
+  --cte-detail-line-height: 16px;
+  --cte-detail-letter-spacing: 0.01em;
+}
+
+.dark {
+  --option-badge-foreground: #241f16;
+  --navigation-active-foreground: #241f16;
+  --emphasis-type-foreground: #241f16;
+  --border-default-color: #413c3233;
+  --neutral-1: #000000;
+  --neutral-1-transparent: #00000033;
+  --neutral-2: #241f16;
+  --neutral-2-transparent: #241f1633;
+  --neutral-3: #2f2a21;
+  --neutral-3-transparent: #2f2a2133;
+  --neutral-4: #413c32;
+  --neutral-4-transparent: #413c3233;
+  --neutral-5: #5b564c;
+  --neutral-5-transparent: #5b564c33;
+  --neutral-6: #888277;
+  --neutral-6-transparent: #88827733;
+  --neutral-7: #b0aa9e;
+  --neutral-7-transparent: #b0aa9e33;
+  --neutral-8: #d4cec2;
+  --neutral-8-transparent: #d4cec233;
+  --neutral-9: #f5f4f1;
+  --neutral-9-transparent: #f5f4f133;
+  --neutral-10: #ffffff;
+  --neutral-10-transparent: #ffffff33;
+  --cte-canvas: #000000;
+  --cte-surface: #241f16;
+  --cte-surface-muted: #2f2a21;
+  --cte-text: #ffffff;
+  --cte-text-muted: #b0aa9e;
+  --cte-border: #413c3233;
+  --cte-accent-text: #241f16;
+}
+
+/* shadcn aliases → Untitled roles (gui/themes/untitled-components.md) */
+:root {
+  --background: var(--neutral-1);
+  --foreground: var(--neutral-10);
+  --card: var(--neutral-2);
+  --card-foreground: var(--neutral-10);
+  --popover: var(--neutral-1);
+  --popover-foreground: var(--neutral-10);
+  --primary: var(--color-1);
+  --primary-foreground: var(--neutral-1);
+  --secondary: var(--color-1-transparent);
+  --secondary-foreground: var(--neutral-10);
+  --muted: var(--neutral-3);
+  --muted-foreground: var(--neutral-7);
+  --accent: var(--neutral-3-transparent);
+  --accent-foreground: var(--neutral-10);
+  --destructive: var(--error);
+  --border: var(--neutral-4);
+  --input: var(--neutral-3);
+  --ring: var(--color-1);
+}
+
+@utility type-xs {
+  font-size: var(--size-xs);
+  line-height: var(--line-xs);
+  letter-spacing: var(--letter-spacing-xs);
+}
+@utility type-s {
+  font-size: var(--size-s);
+  line-height: var(--line-s);
+  letter-spacing: var(--letter-spacing-s);
+}
+@utility type-m {
+  font-size: var(--size-m);
+  line-height: var(--line-m);
+  letter-spacing: var(--letter-spacing-m);
+}
+@utility type-l {
+  font-size: var(--size-l);
+  line-height: var(--line-l);
+  letter-spacing: var(--letter-spacing-l);
+}
+@utility type-xl {
+  font-size: var(--size-xl);
+  line-height: var(--line-xl);
+  letter-spacing: var(--letter-spacing-xl);
+}
+@utility type-xxl {
+  font-size: var(--size-xxl);
+  line-height: var(--line-xxl);
+  letter-spacing: var(--letter-spacing-xxl);
+}
+
+@layer base {
+  * {
+    @apply border-0 outline-ring/50;
+  }
+  html {
+    font-family: var(--font-ui);
+    font-weight: var(--weight-ui-regular);
+    text-wrap: pretty;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Game menu: starry backdrop and title, built from the theme palette. */
+@layer components {
+  .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    /* One green glow behind the title. */
+    background:
+      radial-gradient(40% 35% at 50% 30%, var(--color-1-transparent), transparent 70%),
+      var(--neutral-1);
+  }
+  /* Sparse stars on two layers with different tile sizes, so the repeat doesn't line up. */
+  .menu-backdrop::before,
+  .menu-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    animation: menu-twinkle calc(var(--motion-large-duration) * 8) var(--motion-large-easing) infinite alternate;
+  }
+  .menu-backdrop::before {
+    background-image:
+      radial-gradient(2px 2px at 7% 12%, var(--neutral-10), transparent),
+      radial-gradient(1.5px 1.5px at 31% 41%, var(--neutral-10), transparent),
+      radial-gradient(2.5px 2.5px at 58% 8%, var(--color-4), transparent),
+      radial-gradient(1.5px 1.5px at 83% 63%, var(--neutral-10), transparent),
+      radial-gradient(2px 2px at 19% 77%, var(--color-3), transparent),
+      radial-gradient(1.5px 1.5px at 66% 88%, var(--neutral-10), transparent);
+    background-size: 730px 610px;
+  }
+  .menu-backdrop::after {
+    background-image:
+      radial-gradient(1.5px 1.5px at 13% 53%, var(--neutral-10), transparent),
+      radial-gradient(2px 2px at 44% 22%, var(--neutral-10), transparent),
+      radial-gradient(1.5px 1.5px at 77% 31%, var(--color-3), transparent),
+      radial-gradient(2.5px 2.5px at 91% 84%, var(--neutral-10), transparent),
+      radial-gradient(1.5px 1.5px at 38% 93%, var(--color-4), transparent);
+    background-size: 970px 830px;
+    animation-delay: calc(var(--motion-large-duration) * -4);
+  }
+
+  .menu-title {
+    display: flex;
+    font-family: var(--font-brand);
+    font-weight: var(--weight-brand-heavy);
+    font-size: clamp(var(--size-xxl), 14vw, calc(var(--size-xxl) * 2));
+    line-height: 1;
+    letter-spacing: var(--letter-spacing-xxl);
+  }
+  .menu-title span {
+    color: var(--c);
+    text-shadow: 0 0.06em 0 var(--color-2);
+    animation: menu-bounce calc(var(--motion-large-duration) * 4) var(--motion-large-easing) infinite;
+    animation-delay: calc(var(--i) * var(--motion-duration) * 0.6);
+  }
+
+  /* Nyan cat crossing the sky (path set per flight), rainbow trail flickering between two phases. */
+  .nyan-flight {
+    position: absolute;
+    left: 0;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+  .nyan-bob {
+    animation: nyan-bob 0.4s steps(1) infinite;
+  }
+  .nyan-phase-a,
+  .nyan-phase-b {
+    animation: nyan-flicker 0.4s steps(1) infinite;
+  }
+  .nyan-phase-a {
+    animation-delay: -0.2s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nyan-flight {
+      display: none;
+    }
+    .menu-backdrop::before,
+    .menu-backdrop::after,
+    .menu-title span {
+      animation: none;
+    }
+  }
+}
+
+/* Whack-a-Dad: golden dad tint and the floating score popup. */
+@layer components {
+  .whack-golden {
+    filter: sepia(1) saturate(4) hue-rotate(-12deg) brightness(1.15);
+  }
+  /* Hammer rests tilted back, winds up, then slams upright so the head lands on the pointer. */
+  .whack-hammer {
+    transform: rotate(20deg);
+  }
+  .whack-swing {
+    animation: whack-swing calc(var(--motion-duration) * 1.8) ease-out;
+  }
+  .whack-impact {
+    animation: whack-impact var(--motion-large-duration) var(--motion-large-easing) calc(var(--motion-duration) * 0.6) both;
+  }
+  .whack-popup {
+    animation: whack-popup calc(var(--motion-large-duration) * 2) var(--motion-large-easing) both;
+  }
+}
+
+@keyframes whack-swing {
+  0% { transform: rotate(20deg); }
+  25% { transform: rotate(45deg); }
+  50% { transform: rotate(-10deg) scale(1.1, 0.9); }
+  65% { transform: rotate(0deg); }
+  100% { transform: rotate(20deg); }
+}
+@keyframes whack-impact {
+  0% { opacity: 0; transform: scale(0.2); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+@keyframes whack-popup {
+  from { opacity: 1; transform: translateY(0) scale(0.8); }
+  30% { transform: translateY(-20%) scale(1.1); }
+  to { opacity: 0; transform: translateY(-80%) scale(1); }
+}
+@keyframes menu-twinkle {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
+@keyframes nyan-fly {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100vw); }
+}
+@keyframes nyan-fly-back {
+  from { transform: translateX(100vw); }
+  to { transform: translateX(-100%); }
+}
+@keyframes nyan-bob {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@keyframes nyan-flicker {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+}
+@keyframes menu-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.08em); }
+}
