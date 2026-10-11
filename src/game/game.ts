@@ -1,7 +1,7 @@
 import { Sfx } from './audio'
 import { Ghost, type GhostContext, type GhostName } from './ghost'
-import { BONUS_POS, COLS, Maze, ROWS } from './maze'
-import type { Dir } from './movement'
+import { BONUS_POS, COLS, Maze, ROWS, wrapCol } from './maze'
+import { VEC, type Dir } from './movement'
 import { Player } from './player'
 import { drawGhost, renderMaze, Sprites, TILE, type BonusKind } from './sprites'
 
@@ -119,6 +119,9 @@ export class Game {
   private palette = readPalette()
   private mazeCanvas = renderMaze(this.maze, { fill: this.palette.wallFill, edge: this.palette.wallEdge, door: this.palette.door })
   private flashCanvas = renderMaze(this.maze, { fill: this.palette.background, edge: '#ffffff', door: this.palette.background })
+  /** Self-playing, silent preview that never saves scores. */
+  private demo = false
+  private demoThink = 0
   private lastSnapshot = ''
   private listeners = new Set<(snapshot: Snapshot) => void>()
 
@@ -168,6 +171,12 @@ export class Game {
     this.emit()
   }
 
+  startDemo() {
+    this.demo = true
+    this.sfx.silent = true
+    this.newGame()
+  }
+
   setDirection(dir: Dir) {
     this.player.nextDir = dir
   }
@@ -209,6 +218,7 @@ export class Game {
   private update(dt: number) {
     this.time += dt
     if (this.paused) return
+    if (this.demo) this.autopilot(dt)
     switch (this.phase) {
       case 'ready':
         this.phaseTimer -= dt
@@ -242,6 +252,47 @@ export class Game {
         break
     }
     this.emit()
+  }
+
+  /** Demo player: head for the nearest food along paths that keep clear of dangerous ghosts. */
+  private autopilot(dt: number) {
+    if (this.phase === 'gameOver') {
+      this.newGame()
+      return
+    }
+    this.demoThink -= dt
+    if (this.phase !== 'playing' || this.demoThink > 0) return
+    this.demoThink = 0.08
+    const start = { c: Math.round(this.player.x), r: Math.round(this.player.y) }
+    const danger = this.ghosts
+      .filter((g) => g.state === 'active' && !g.frightened)
+      .map((g) => ({ c: Math.round(g.x), r: Math.round(g.y) }))
+    const unsafe = (c: number, r: number) => danger.some((g) => Math.abs(g.c - c) + Math.abs(g.r - r) <= 2)
+    const seen = new Set([`${start.c},${start.r}`])
+    const queue: { c: number; r: number; first: Dir }[] = []
+    for (const dir of ['up', 'down', 'left', 'right'] as const) {
+      const c = wrapCol(start.c + VEC[dir].x)
+      const r = start.r + VEC[dir].y
+      if (!this.maze.walkable(c, r) || unsafe(c, r)) continue
+      seen.add(`${c},${r}`)
+      queue.push({ c, r, first: dir })
+    }
+    while (queue.length) {
+      const { c, r, first } = queue.shift()!
+      const tile = this.maze.get(c, r)
+      if (tile === '.' || tile === 'o') {
+        this.player.nextDir = first
+        return
+      }
+      for (const dir of ['up', 'down', 'left', 'right'] as const) {
+        const nc = wrapCol(c + VEC[dir].x)
+        const nr = r + VEC[dir].y
+        const key = `${nc},${nr}`
+        if (seen.has(key) || !this.maze.walkable(nc, nr) || unsafe(nc, nr)) continue
+        seen.add(key)
+        queue.push({ c: nc, r: nr, first })
+      }
+    }
   }
 
   private startLevel(first: boolean) {
@@ -411,6 +462,7 @@ export class Game {
   }
 
   private saveHighScore() {
+    if (this.demo) return
     localStorage.setItem(HIGH_SCORE_KEY, String(this.highScore))
   }
 
@@ -469,7 +521,7 @@ export class Game {
 
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    for (const p of this.popups) {
+    for (const p of this.demo ? [] : this.popups) {
       ctx.font = `700 14px ${pal.font}`
       ctx.fillStyle = pal.popup
       ctx.fillText(p.text, (p.x + 0.5) * TILE, (p.y + 0.5) * TILE)

@@ -109,6 +109,23 @@ export class WhackGame {
     this.emit()
   }
 
+  /** Self-playing, silent preview that never saves scores. */
+  private demo = false
+  private demoWait = 0
+
+  startDemo() {
+    this.demo = true
+    this.sfx.silent = true
+    this.newGame()
+  }
+
+  /** Demo player: bonks most dads after a human-ish delay and leaves Adam alone. */
+  private autopilot(dt: number) {
+    this.holes.forEach((hole, i) => {
+      if (hole.up && !hole.hit && hole.who !== 'adam' && Math.random() < dt * 2.5) this.whack(i)
+    })
+  }
+
   whack(index: number) {
     const hole = this.holes[index]
     if (this.phase !== 'playing' || this.paused || !hole?.up || hole.hit || !hole.who) return
@@ -135,7 +152,16 @@ export class WhackGame {
     const loop = (now: number) => {
       const dt = Math.min((now - (this.last || now)) / 1000, 0.1)
       this.last = now
-      if (this.phase === 'playing' && !this.paused) this.update(dt)
+      if (this.phase === 'playing' && !this.paused) {
+        if (this.demo) this.autopilot(dt)
+        this.update(dt)
+      } else if (this.demo && this.phase === 'gameOver') {
+        this.demoWait += dt
+        if (this.demoWait > 1.5) {
+          this.demoWait = 0
+          this.newGame()
+        }
+      }
       this.frame = requestAnimationFrame(loop)
     }
     this.frame = requestAnimationFrame(loop)
@@ -188,7 +214,7 @@ export class WhackGame {
     if (this.score > this.best) {
       this.best = this.score
       this.newBest = true
-      localStorage.setItem(BEST_KEY, String(this.best))
+      if (!this.demo) localStorage.setItem(BEST_KEY, String(this.best))
     }
     this.sfx.end()
   }

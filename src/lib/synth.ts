@@ -13,6 +13,8 @@ export interface Note {
 export class Synth {
   protected ctx: AudioContext | null = null
   muted = localStorage.getItem(MUTE_KEY) === '1'
+  /** Never makes a sound, e.g. for menu previews. Audio is simply never unlocked. */
+  silent = false
 
   setMuted(muted: boolean) {
     this.muted = muted
@@ -21,6 +23,7 @@ export class Synth {
 
   /** Must be called from a user gesture before sounds can play. */
   unlock() {
+    if (this.silent) return
     if (!this.ctx) this.ctx = new AudioContext()
     if (this.ctx.state === 'suspended') void this.ctx.resume()
   }

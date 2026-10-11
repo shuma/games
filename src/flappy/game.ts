@@ -111,6 +111,32 @@ export class FlappyGame {
 
   // ---- Controls -----------------------------------------------------------
 
+  /** Self-playing, silent preview that never saves scores. */
+  private demo = false
+  private demoWait = 0
+
+  startDemo() {
+    this.demo = true
+    this.sfx.silent = true
+    this.newGame()
+  }
+
+  /** Demo pilot: flap whenever the wizard sinks below the next gap's centre. */
+  private autopilot(dt: number) {
+    if (this.phase === 'gameOver' || this.phase === 'ready') {
+      this.demoWait += dt
+      if (this.demoWait < 0.8) return
+      this.demoWait = 0
+      if (this.phase === 'gameOver') this.newGame()
+      else this.flap()
+      return
+    }
+    if (this.phase !== 'playing') return
+    const next = this.towers.find((t) => t.x + TOWER_W > WIZARD_X - HIT.left)
+    const target = next ? next.gapY + next.gap * 0.1 : H * 0.45
+    if (this.y > target && this.vy > -60) this.flap()
+  }
+
   /** Puts the wizard in the hover state, waiting for the first flap. */
   newGame() {
     this.sfx.unlock()
@@ -184,6 +210,7 @@ export class FlappyGame {
   private update(dt: number) {
     this.time += dt
     if (this.paused) return
+    if (this.demo) this.autopilot(dt)
     this.flash = Math.max(0, this.flash - dt)
     this.shake = Math.max(0, this.shake - dt)
     this.updateDebris(dt)
@@ -267,7 +294,10 @@ export class FlappyGame {
   private spawnTower(x: number) {
     const gap = this.gap
     const margin = 60
-    const gapY = margin + gap / 2 + Math.random() * (GROUND_Y - margin * 2 - gap)
+    // The menu preview crops to the middle of the sky, so keep demo gaps near the centre.
+    const gapY = this.demo
+      ? H * 0.45 + (Math.random() - 0.5) * 60
+      : margin + gap / 2 + Math.random() * (GROUND_Y - margin * 2 - gap)
     this.towers.push({ x, gapY, gap, scored: false })
     if (this.score >= 2 && Math.random() < 0.35) {
       const sx = x + TOWER_W + (SPACING - TOWER_W) / 2
@@ -339,7 +369,7 @@ export class FlappyGame {
 
   private endGame() {
     this.phase = 'gameOver'
-    localStorage.setItem(BEST_KEY, String(this.best))
+    if (!this.demo) localStorage.setItem(BEST_KEY, String(this.best))
   }
 
   private addScore(points: number) {
@@ -414,7 +444,7 @@ export class FlappyGame {
     ctx.textBaseline = 'middle'
     this.font ||= getComputedStyle(document.documentElement).getPropertyValue('--font-ui')
     const font = this.font
-    for (const p of this.popups) {
+    for (const p of this.demo ? [] : this.popups) {
       ctx.font = `700 14px ${font}`
       ctx.fillStyle = p.text.startsWith('+') ? '#ffd23f' : '#ffffff'
       ctx.fillText(p.text, p.x, p.y)

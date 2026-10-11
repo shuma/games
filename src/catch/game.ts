@@ -115,6 +115,35 @@ export class CatchGame {
     this.emit()
   }
 
+  /** Self-playing, silent preview that never saves scores. */
+  private demo = false
+  private demoWait = 0
+
+  startDemo() {
+    this.demo = true
+    this.sfx.silent = true
+    this.newGame()
+  }
+
+  /** Demo player: chase the lowest snack, sidestepping yucky things about to land. */
+  private autopilot(dt: number) {
+    if (this.phase === 'gameOver') {
+      this.demoWait += dt
+      if (this.demoWait > 0.8) {
+        this.demoWait = 0
+        this.newGame()
+      }
+      return
+    }
+    if (this.phase !== 'playing') return
+    const reachable = (i: Item) => Math.abs(i.x - this.x) / 600 < (PLAYER_Y - i.y) / i.vy + 0.05
+    const food = this.items.filter((i) => i.kind.points > 0 && i.y < PLAYER_Y && reachable(i)).sort((a, b) => b.y - a.y)[0]
+    let goal = food ? food.x : W / 2
+    const threat = this.items.find((i) => i.kind.points === 0 && i.y > PLAYER_Y - 140 && i.y < PLAYER_Y && Math.abs(i.x - goal) < 44)
+    if (threat) goal = threat.x + (goal < threat.x ? -50 : 50)
+    this.aim(goal)
+  }
+
   /** Move Adam toward an x position in game units. */
   aim(x: number) {
     this.target = Math.min(W - PLAYER_SIZE / 2, Math.max(PLAYER_SIZE / 2, x))
@@ -150,6 +179,7 @@ export class CatchGame {
 
   private update(dt: number) {
     this.time += dt
+    if (this.demo) this.autopilot(dt)
     for (const p of this.popups) {
       p.timer -= dt
       p.y -= 40 * dt
@@ -230,7 +260,7 @@ export class CatchGame {
     if (this.score > this.best) {
       this.best = this.score
       this.newBest = true
-      localStorage.setItem(BEST_KEY, String(this.best))
+      if (!this.demo) localStorage.setItem(BEST_KEY, String(this.best))
     }
   }
 
@@ -265,7 +295,7 @@ export class CatchGame {
     this.font ||= getComputedStyle(document.documentElement).getPropertyValue('--font-ui')
     ctx.textAlign = 'center'
     ctx.font = `700 18px ${this.font}`
-    for (const p of this.popups) {
+    for (const p of this.demo ? [] : this.popups) {
       ctx.globalAlpha = Math.min(1, p.timer * 3)
       ctx.lineWidth = 4
       ctx.strokeStyle = '#000000'

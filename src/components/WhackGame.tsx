@@ -139,7 +139,7 @@ export function WhackGame({ onExit }: { onExit: () => void }) {
   )
 }
 
-function Hole({ index, hole, onWhack }: { index: number; hole: HoleView; onWhack: () => void }) {
+export function Hole({ index, hole, onWhack }: { index: number; hole: HoleView; onWhack: () => void }) {
   const isAdam = hole.who === 'adam'
   return (
     <button

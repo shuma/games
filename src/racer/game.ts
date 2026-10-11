@@ -152,6 +152,32 @@ export class RacerGame {
     this.emit()
   }
 
+  /** Self-playing, silent preview that never saves scores. */
+  private demo = false
+  private demoWait = 0
+
+  startDemo() {
+    this.demo = true
+    this.sfx.silent = true
+    this.newGame()
+  }
+
+  /** Demo driver: jump just before each fire. */
+  private autopilot(dt: number) {
+    if (this.phase === 'gameOver') {
+      this.demoWait += dt
+      if (this.demoWait > 0.8) {
+        this.demoWait = 0
+        this.newGame()
+      }
+      return
+    }
+    if (this.phase !== 'playing' || !this.onGround) return
+    const front = CAR_X + CAR_W - 6
+    const next = this.fires.find((f) => f.x + 3 > front)
+    if (next && next.x + 3 - front < this.speed * 0.06 + 4) this.jump()
+  }
+
   jump() {
     if (this.phase !== 'playing' || this.paused) return
     this.jumpQueued = JUMP_BUFFER
@@ -205,6 +231,7 @@ export class RacerGame {
 
   private update(dt: number) {
     this.time += dt
+    if (this.demo) this.autopilot(dt)
     this.updateEffects(dt)
 
     if (this.phase === 'countdown') {
@@ -409,7 +436,7 @@ export class RacerGame {
     if (this.score > this.best) {
       this.best = this.score
       this.newBest = true
-      localStorage.setItem(BEST_KEY, String(this.best))
+      if (!this.demo) localStorage.setItem(BEST_KEY, String(this.best))
     }
   }
 
@@ -467,7 +494,7 @@ export class RacerGame {
       ctx.font = `700 ${Math.round(56 * pulse)}px ${this.font}`
       this.outlinedText(ctx, String(n), W / 2, 120, '#ffd23f')
     }
-    for (const p of this.popups) {
+    for (const p of this.demo ? [] : this.popups) {
       ctx.globalAlpha = Math.min(1, p.timer * 3)
       ctx.font = p.text === 'GO!' ? `700 56px ${this.font}` : `700 14px ${this.font}`
       this.outlinedText(ctx, p.text, p.x, p.y, p.good ? '#ffd23f' : '#ff6b4a')
